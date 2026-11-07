@@ -5,12 +5,12 @@ import {
   isAddress,
 } from 'viem';
 import type { Address } from 'viem';
-import { DEFAULT_CHAIN } from './networks';
+import { sepolia } from 'viem/chains';
 
 export const publicClient = createPublicClient({
-  chain: DEFAULT_CHAIN,
-  transport: http(undefined, {
-    timeout: 10000,
+  chain: sepolia,
+  transport: http('https://ethereum-sepolia-rpc.publicnode.com', {
+    timeout: 15000,
     retryCount: 2,
   }),
 });
@@ -23,7 +23,7 @@ export async function getWalletBalance(
   address: string
 ): Promise<string> {
   if (!isAddress(address)) {
-    throw new Error('Invalid Ethereum wallet address');
+    throw new Error('Invalid Ethereum address');
   }
 
   const balance = await publicClient.getBalance({

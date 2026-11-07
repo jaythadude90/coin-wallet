@@ -1,68 +1,72 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
-  Pressable,
 } from 'react-native';
 
-import { DEFAULT_CHAIN } from './src/blockchain/networks';
-import { getNetworkBlockNumber } from './src/blockchain/client';
+import { sepolia } from 'viem/chains';
+import { createPublicClient, http } from 'viem';
+
+const client = createPublicClient({
+  chain: sepolia,
+  transport: http('https://ethereum-sepolia-rpc.publicnode.com'),
+});
 
 export default function App() {
-  const [block, setBlock] = useState<string | null>(null);
+  const [block, setBlock] = useState('Connecting...');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function checkNetwork() {
+  async function refreshNetwork() {
     setLoading(true);
-    setError(null);
 
     try {
-      const latestBlock = await getNetworkBlockNumber();
-      setBlock(latestBlock.toString());
+      const latest = await client.getBlockNumber();
+      setBlock(latest.toString());
     } catch {
-      setError('Unable to connect to Sepolia. Check your network or RPC provider.');
+      setBlock('Connection unavailable');
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    void checkNetwork();
+    void refreshNetwork();
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>CoinWallet</Text>
-      <Text style={styles.subtitle}>Secure Wallet Development</Text>
+      <Text style={styles.subtitle}>Your Crypto. Your Control.</Text>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Network</Text>
-        <Text style={styles.value}>{DEFAULT_CHAIN.name}</Text>
+        <Text style={styles.label}>NETWORK</Text>
+        <Text style={styles.value}>Ethereum Sepolia</Text>
 
-        <Text style={styles.label}>Chain ID</Text>
-        <Text style={styles.value}>{DEFAULT_CHAIN.id}</Text>
+        <Text style={styles.label}>CHAIN ID</Text>
+        <Text style={styles.value}>11155111</Text>
 
-        <Text style={styles.label}>Latest Block</Text>
-
+        <Text style={styles.label}>LATEST BLOCK</Text>
         {loading ? (
-          <ActivityIndicator />
+          <ActivityIndicator color="#38BDF8" />
         ) : (
-          <Text style={styles.value}>{block ?? 'Not connected'}</Text>
+          <Text style={styles.value}>{block}</Text>
         )}
 
-        {error && <Text style={styles.error}>{error}</Text>}
-
-        <Pressable style={styles.button} onPress={checkNetwork} disabled={loading}>
+        <Pressable
+          style={styles.button}
+          onPress={refreshNetwork}
+          disabled={loading}
+        >
           <Text style={styles.buttonText}>Refresh Network</Text>
         </Pressable>
       </View>
 
       <Text style={styles.footer}>
-        Sepolia Testnet Only — No Real Funds
+        TESTNET MODE — NO REAL FUNDS
       </Text>
     </SafeAreaView>
   );
@@ -71,56 +75,55 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1220',
+    backgroundColor: '#080F1F',
     justifyContent: 'center',
     padding: 24,
   },
   title: {
+    fontSize: 38,
+    fontWeight: '800',
     color: '#FFFFFF',
-    fontSize: 34,
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   subtitle: {
+    fontSize: 16,
     color: '#94A3B8',
     textAlign: 'center',
     marginTop: 8,
-    marginBottom: 36,
+    marginBottom: 35,
   },
   card: {
-    backgroundColor: '#172235',
-    borderRadius: 18,
+    backgroundColor: '#152238',
     padding: 24,
+    borderRadius: 20,
   },
   label: {
     color: '#94A3B8',
-    fontSize: 14,
-    marginTop: 16,
+    fontSize: 12,
+    marginTop: 20,
+    letterSpacing: 1,
   },
   value: {
     color: '#FFFFFF',
     fontSize: 22,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  error: {
-    color: '#F87171',
-    marginTop: 16,
+    fontWeight: '700',
+    marginTop: 6,
   },
   button: {
     backgroundColor: '#2563EB',
-    borderRadius: 10,
-    padding: 14,
-    marginTop: 24,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 28,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontWeight: '600',
     textAlign: 'center',
+    fontWeight: '700',
   },
   footer: {
     color: '#64748B',
     textAlign: 'center',
     marginTop: 30,
+    fontSize: 12,
   },
 });
