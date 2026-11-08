@@ -1,3 +1,4 @@
+import { testSecureStore } from './src/security/secureStoreTest';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,11 +20,22 @@ import {
 
 export default function App() {
   const [block, setBlock] = useState('Connecting...');
+  const [secureStoreStatus, setSecureStoreStatus] = useState('Not tested');
   const [networkLoading, setNetworkLoading] = useState(false);
   const [address, setAddress] = useState('');
   const [balance, setBalance] = useState<string | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [error, setError] = useState('');
+
+  async function runSecureStoreTest() {
+    setSecureStoreStatus('Testing...');
+    try {
+      const passed = await testSecureStore();
+      setSecureStoreStatus(passed ? 'PASSED' : 'FAILED');
+    } catch {
+      setSecureStoreStatus('FAILED');
+    }
+  }
 
   async function refreshNetwork() {
     setNetworkLoading(true);
@@ -146,6 +158,22 @@ export default function App() {
           )}
 
           {!!error && <Text style={styles.error}>{error}</Text>}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Security Diagnostics</Text>
+          <Text style={styles.description}>
+            Native iOS secure storage verification.
+          </Text>
+          <Text style={styles.value}>
+            SecureStore: {secureStoreStatus}
+          </Text>
+          <Pressable
+            style={styles.button}
+            onPress={() => void runSecureStoreTest()}
+          >
+            <Text style={styles.buttonText}>Run SecureStore Test</Text>
+          </Pressable>
         </View>
 
         <Text style={styles.footer}>

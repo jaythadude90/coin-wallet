@@ -23,6 +23,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "coinwallet"
+    "scheme": "coinwallet",
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
