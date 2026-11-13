@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -24,6 +24,7 @@ export default function App() {
   const [balance, setBalance] = useState<string | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [error, setError] = useState('');
+  const addressRevision = useRef(0);
 
   async function refreshNetwork() {
     setNetworkLoading(true);
@@ -39,6 +40,7 @@ export default function App() {
 
   async function checkBalance() {
     const input = address.trim();
+    const revision = addressRevision.current;
     setBalance(null);
     setError('');
 
@@ -52,9 +54,13 @@ export default function App() {
 
     try {
       const result = await getWalletBalance(input);
-      setBalance(result);
+      if (revision === addressRevision.current) {
+        setBalance(result);
+      }
     } catch {
-      setError('Balance lookup failed. Check your connection and retry.');
+      if (revision === addressRevision.current) {
+        setError('Balance lookup failed. Check your connection and retry.');
+      }
     } finally {
       setBalanceLoading(false);
     }
@@ -106,6 +112,7 @@ export default function App() {
             style={styles.input}
             value={address}
             onChangeText={(value) => {
+              addressRevision.current += 1;
               setAddress(value);
               setBalance(null);
               setError('');
